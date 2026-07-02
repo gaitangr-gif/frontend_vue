@@ -1,4 +1,6 @@
+
 <template>
+  <!-- 
     <h1>Ingresar</h1>
     
     <label for="">Ingrese Correo: </label>
@@ -9,20 +11,83 @@
     <br>
     <br>
     <button v-on:click="funIngresar()">Ingresar</button>
+    <button v-on:click="funSalir()">Salir</button>
     <br>
     <br>
     {{ credenciales }}
     <br>
     <br>
     {{ respuesta }}
+  -->
+
+    <Dialog v-model:visible="visible" modal :closable="false" :dismissableMask="false" :style="{ width: '24rem' }"
+        class="saas-dialog">
+        
+        
+        <template #header>
+            <div
+                style=" display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; text-align:center;">
+
+                <Avatar image="/logo.png" shape="circle" size="xlarge" />
+
+                <div>
+                    <h2 class="text-lg font-bold">Bienvenido!</h2>
+                    <p class="text-md text-gray-500">Inicia sesión en tu cuenta</p>
+                </div>
+
+            </div>
+
+        </template>
+        
+       
+
+        <div class="space-y-4 max-w-xs mx-auto">
+            <InputGroup>
+                <InputGroupAddon>
+                    <i class="pi pi-user"></i>
+                </InputGroupAddon>
+                <InputText v-model="credenciales.email" placeholder="correo electrónico" />
+            </InputGroup>
+
+            <InputGroup>
+                <InputGroupAddon>
+                     <i class="pi pi-lock"></i>
+                </InputGroupAddon>
+                <InputText v-model="credenciales.password" type="password" placeholder="contraseña" />
+            </InputGroup>
+
+          <div class="space-y-4 max-w-xs mx-auto">            
+                <br>
+                {{ errors.email }}
+                <br>
+                {{ errors.password }}
+            </div>
+
+        </div>
+
+
+     <template #footer>
+            <div class="flex w-full gap-4">
+                <Button class="flex-1" severity="secondary" variant="outlined" @click="funSalir">
+                    Salir
+                </Button>
+
+                <Button class="flex-1" severity="primary" @click="funIngresar">
+                    Ingresar
+                </Button>
+            </div>
+        </template>
+
+    </Dialog>
 
 </template>
 
-<script setup>
 
+<script setup>
 import { ref } from 'vue';
 import authService from '../../services/auth.service';
 import { useRouter } from 'vue-router';
+import { onMounted } from 'vue'
 
 const credenciales = ref({ email: "", password: "" });
 const respuesta = ref();
@@ -58,5 +123,24 @@ async function funIngresar() {
     }    
 }
 
+
+//Codigo añadido para el formulario Dialog De usuario y contraseña
+
+const visible = ref(false)
+
+onMounted(() => {
+    visible.value = true
+})
+
+
+async function funSalir() {
+        router.push('/') // 👉 te lleva a Inicio (web pública)
+}
+
 </script>
+
+
+
+
+
 

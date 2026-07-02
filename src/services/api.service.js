@@ -9,46 +9,88 @@ export const BASE_URL = "http://localhost:8000";
 // Simplemtente concatenamos la var anterior con el string /api y se froma direccion a api del backend 
 export const BASE_URL_API = `${BASE_URL}/api`; 
 
+//Esta Api controla todas las peticiones que necesitas autorizacion. General para todo el proyecto
+export default function Api() {
+  //Variable que guardara el token
+  //Buscar el token en el localStorage del navegador como lo guardamos en Login.vue
+  const token = localStorage.getItem("access_token");
 
-export default function Api(){
-    //Variable que guardara el token
-    //Buscar el token en el localStorage del navegador como lo guardamos en Login.vue
-    const token = localStorage.getItem("access_token")
+  //En esta parte configuro mi peticion http
+  //En cada peticion que hagamos al backend le enviaremos la ruta de la api y el token de autorizacion
+  const api = axios.create({
+    baseURL: BASE_URL_API, //indico en donde me voy a conectar
+    //Esta linea la traigo de los archivos doc/rest/user.rest que cree en mi backend
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer '+token
+    },
+  });
 
-    //En esta parte configuro mi peticion http
-    //En cada peticion que hagamos al backend le enviaremos la ruta de la api y el token de autorizacion
-    const api = axios.create({ 
-        baseURL: BASE_URL_API, //indico en donde me voy a conectar
-        //Esta linea la traigo de los archivos doc/rest/user.rest que cree en mi backend
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer '+token
-        }
-    });
+  //En esta parte del codigo colocamos interceptores en caso que sucedan errores en las peticiones
+  //y eso lo configuamos en la variable api que es la que hace la peticion
+  api.interceptors.response.use(
+    (response) => {
+      return response;
+    },
 
-    //En esta parte del codigo colocamos interceptores en caso que sucedan errores en las peticiones
-    //y eso lo configuamos en la variable api que es la que hace la peticion
-    api.interceptors.response.use(
-        (response) => {
-            return response;
-        },
+    (error) => {
+      // Si el error es 401. Error de autenticacion
+      if (error.response?.status === 401) {
+        //Si se da un error elimina el token
+        localStorage.removeItem("access_token");
 
-        (error) => {
-            // Si el error es 401. Error de autenticacion
-            if (error.response?.status === 401){
-                //window.location.reload(); // recarga la página completa
-                //location.href = "#/auth/login" //Redirecciona a esta ruta  
+        //window.location.reload(); // recarga la página completa
+        //location.href = "#/auth/login" //Redirecciona a esta ruta
 
-                router.push('/auth/login');  //Uso aca si importo las rutas para no usar el # 
-                                                           
-            }
+        router.push("/auth/login"); //Uso aca si importo las rutas para no usar el #
+      }
 
-            return Promise.reject(error); // Sino hay error continua su camino
-        }
-    )
+      return Promise.reject(error); // Sino hay error continua su camino
+    },
+  );
 
-    return api;
+  return api;
 }
+
+//Esta Api sera para peticiones Publicas, no cesecita token etc. Por ejemplo: Loggin. Registro o cambios de Usuario
+export function ApiAuth() {
+
+  //En esta parte configuro mi peticion http
+  //En cada peticion que hagamos al backend le enviaremos la ruta de la api y el token de autorizacion
+  const api = axios.create({
+    baseURL: BASE_URL_API, //indico en donde me voy a conectar
+    //Esta linea la traigo de los archivos doc/rest/user.rest que cree en mi backend
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+
+  //En esta parte del codigo colocamos interceptores en caso que sucedan errores en las peticiones
+  //y eso lo configuamos en la variable api que es la que hace la peticion
+  api.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+
+    (error) => {
+      // Si el error es 401. Error de autenticacion
+      if (error.response?.status === 401) {
+        //Si se da un error elimina el token
+        localStorage.removeItem("access_token");
+
+        //window.location.reload(); // recarga la página completa
+        //location.href = "#/auth/login" //Redirecciona a esta ruta
+
+        router.push("/auth/login") //Uso aca si importo las rutas para no usar el #
+      }
+
+      return Promise.reject(error); // Sino hay error continua su camino
+    },
+  );
+
+  return api;
+}
+
 
 //Este archivo nos servirá para todo el proyecto
 //Lo llamaermos desde las SFC que necesiten conectar al Backend
